@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO.Ports;
 using System.Threading;
-namespace LS_Driver
+namespace WindowsFormsApplication1
 {
    public class CNET
     {
@@ -78,55 +78,73 @@ namespace LS_Driver
        {
            var dataB = new List<byte>();
            string command = "";
-           //string deviceName = "%" + memoryType + dataType + position;
+           string deviceName = "%" + memoryType + dataType + position;
            //byte[] ValAddressByte_6 = Encoding.Default.GetBytes(deviceName);
            //command += ENQ;
            //dataB.Add(ENQ);
-           //command += StationNo;
+           command += StationNo;
            //dataB.Add(Convert.ToByte(StationNo));
-           //command += Command.R;
+           command += Command.R;
            //dataB.Add(Convert.ToByte(Command.R));
-           //command += Individual;
-           
-           //command += "01";
+           command += Individual;
+
+           command += "01";
            //dataB.Add(Convert.ToByte("01"));
-           //command += deviceName.Length.ToString("00");
+           command += deviceName.Length.ToString("00");
            //dataB.Add(Convert.ToByte(deviceName.Length.ToString("00")));
-           //command += deviceName;
-           
+           command += deviceName;
+
+           byte [] tmpByte = CommandToByteArray(command);
            //command += EOT;
            //dataB.Add(EOT);
            ////SendData(command);
            byte[] bte = Encoding.Default.GetBytes("%DW50");
-
-          var  arr =  new List<byte>(){0x05,0x30,0x31,0x52,0x53,0x53,0x30,0x31,0x30,0x35 };
-          arr.Add(bte[0]);
-          arr.Add(bte[1]);
-          arr.Add(bte[2]);
-          arr.Add(bte[3]);
-          arr.Add(bte[4]);
-          //arr.Add(bte[5]);
-          arr.Add(0x04);
-          COM.Write(arr.ToArray(), 0, arr.ToArray().Length);
+           bte.ToList().Insert(0, ENQ);
+           bte.ToList().Insert(0, ENQ);
+           var arr = new List<byte>() { 0x05, 0x30, 0x31, 0x52, 0x53, 0x53, 0x30, 0x31, 0x30, 0x35 };
+           arr.Add(bte[0]);
+           arr.Add(bte[1]);
+           arr.Add(bte[2]);
+           arr.Add(bte[3]);
+           arr.Add(bte[4]);
+           arr.Add(0x04);
+           //COM.Write(arr.ToArray(), 0, arr.ToArray().Length);
            Thread.Sleep(50);
-           
+
            return Encoding.Default.GetString(datars);
 
 
        }
 
+       public byte[] CommandToByteArray(string command)
+       {
+           byte[] result = new byte[command.Length];
+           if (command != "")
+           {
+               for (int i = 0; i < command.Length; i++)
+               {
+                   result[i] = (byte)command[i];
+               }
+           }
+           return result;
+       }
+
+
+
+
+
        int bl = 0;
-       byte[] datars = new byte[1024];
+       byte[] datars;
 
        void COM_DataReceived(object sender, SerialDataReceivedEventArgs e)
        {
            
-           //Int32 dataLength = COM.BytesToRead;
-           //byte[] data = new byte[dataLength];
-           //int nbrDataRead = COM.Read(data, 0, dataLength);
-           //if (nbrDataRead == 0)
-           //    return;
-           bl = COM.Read(datars, 0, 1024);   
+           Int32 dataLength = COM.BytesToRead;
+           datars = new byte[dataLength];
+           int nbrDataRead = COM.Read(datars, 0, dataLength);
+           if (nbrDataRead == 0)
+               return;
+           //bl = COM.Read(datars, 0, 1024);   
        }
 
 
@@ -146,7 +164,7 @@ namespace LS_Driver
        }
        public enum DeviceType
        {
-           p = 'P',
+           P = 'P',
            M = 'M',
            K = 'K',
            F = 'F',
